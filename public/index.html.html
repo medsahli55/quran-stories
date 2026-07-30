@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fleet Manager – Vehicles, Drivers, Trips & Maintenance</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+    body { background: #f1f5f9; display: flex; justify-content: center; padding: 20px; }
+    #app { max-width: 1200px; width: 100%; background: white; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.08); padding: 24px; }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 2px solid #e9edf2; padding-bottom: 16px; margin-bottom: 24px; }
+    nav button { background: none; border: none; padding: 10px 20px; border-radius: 40px; font-weight: 600; color: #475569; cursor: pointer; transition: all 0.2s; }
+    nav button:hover { background: #f1f5f9; }
+    nav button.active { background: #1e293b; color: white; }
+    .tab { display: none; animation: fade 0.25s ease; }
+    .tab.active { display: block; }
+    @keyframes fade { from { opacity: 0.4; } to { opacity: 1; } }
+
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .header-row h2 { color: #0f172a; font-weight: 700; }
+    .btn { background: #1e293b; color: white; border: none; padding: 10px 22px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; }
+    .btn:hover { background: #0f172a; transform: scale(0.97); }
+    .btn-danger { background: #dc2626; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-edit { background: #2563eb; }
+    .btn-edit:hover { background: #1d4ed8; }
+    .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    th { background: #f8fafc; text-align: left; padding: 14px 16px; font-weight: 600; color: #334155; font-size: 14px; border-bottom: 1px solid #e2e8f0; }
+    td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; color: #1e293b; vertical-align: middle; }
+    tr:hover td { background: #fafcff; }
+    .badge { background: #f1f5f9; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #334155; }
+    .badge-warning { background: #fef9c3; color: #854d0e; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.4); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 999; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; padding: 32px; border-radius: 28px; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 40px 80px rgba(0,0,0,0.2); }
+    .modal h3 { margin-bottom: 20px; color: #0f172a; }
+    .modal label { display: block; font-weight: 500; color: #334155; margin: 12px 0 4px; font-size: 14px; }
+    .modal input, .modal select, .modal textarea { width: 100%; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; transition: 0.2s; }
+    .modal input:focus, .modal select:focus { outline: none; border-color: #1e293b; box-shadow: 0 0 0 3px rgba(30,41,59,0.1); }
+    .modal .row { display: flex; gap: 16px; }
+    .modal .row > * { flex: 1; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
+    .modal-actions .btn { background: #e2e8f0; color: #1e293b; }
+    .modal-actions .btn-primary { background: #1e293b; color: white; }
+    .modal-actions .btn-primary:hover { background: #0f172a; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 30px; }
+    .stat-card { background: #f8fafc; padding: 20px; border-radius: 16px; text-align: center; }
+    .stat-card .num { font-size: 32px; font-weight: 700; color: #0f172a; }
+    .stat-card .label { color: #64748b; font-weight: 500; margin-top: 4px; }
+
+    .alert-list { background: #fef9c3; border-left: 6px solid #eab308; padding: 12px 20px; border-radius: 12px; margin-bottom: 20px; }
+    .alert-list strong { color: #854d0e; }
+    .alert-list ul { margin-top: 8px; list-style: none; padding-left: 0; }
+    .alert-list li { padding: 4px 0; color: #78350f; }
+
+    .empty { text-align: center; padding: 40px 0; color: #94a3b8; font-weight: 500; }
+
+    .flex { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .mt-2 { margin-top: 12px; }
+    .text-muted { color: #64748b; font-size: 14px; }
+
+    @media (max-width: 700px) { #app { padding: 16px; } nav button { padding: 8px 14px; font-size: 13px; } .modal { margin: 16px; padding: 20px; } td, th { padding: 10px 8px; font-size: 13px; } }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- Navigation -->
+  <nav>
+    <button class="active" data-tab="dashboard">📊 Dashboard</button>
+    <button data-tab="vehicles">🚗 Vehicles</button>
+    <button data-tab="drivers">👤 Drivers</button>
+    <button data-tab="trips">📋 Daily Missions</button>
+    <button data-tab="maintenance">🔧 Maintenance</button>
+  </nav>
+
+  <!-- ============ DASHBOARD ============ -->
+  <div id="tab-dashboard" class="tab active">
+    <h2 style="margin-bottom:10px;">Fleet Overview</h2>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div id="maintenanceAlerts"></div>
+  </div>
+
+  <!-- ============ VEHICLES ============ -->
+  <div id="tab-vehicles" class="tab">
+    <div class="header-row"><h2>Vehicles</h2><button class="btn" onclick="openModal('vehicle')">+ Add Vehicle</button></div>
+    <div id="vehicleList"></div>
+  </div>
+
+  <!-- ============ DRIVERS ============ -->
+  <div id="tab-drivers" class="tab">
+    <div class="header-row"><h2>Drivers</h2><button class="btn" onclick="openModal('driver')">+ Add Driver</button></div>
+    <div id="driverList"></div>
+  </div>
+
+  <!-- ============ TRIPS (Missions) ============ -->
+  <div id="tab-trips" class="tab">
+    <div class="header-row"><h2>Daily Missions / Trips</h2><button class="btn" onclick="openModal('trip')">+ New Trip</button></div>
+    <div id="tripList"></div>
+  </div>
+
+  <!-- ============ MAINTENANCE ============ -->
+  <div id="tab-maintenance" class="tab">
+    <div class="header-row"><h2>Maintenance Records</h2><button class="btn" onclick="openModal('maintenance')">+ Add Maintenance</button></div>
+    <div id="maintenanceList"></div>
+  </div>
+
+  <!-- ============ MODAL (Universal) ============ -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modalContent">
+      <h3 id="modalTitle">Add New</h3>
+      <div id="modalBody"></div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="modalSaveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- DATA LAYER ----------
+  const DB = {
+    get(key) { return JSON.parse(localStorage.getItem(key) || '[]'); },
+    set(key, data) { localStorage.setItem(key, JSON.stringify(data)); },
+    genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+  };
+
+  let editId = null;
+  let currentTab = 'vehicle'; // which entity we're editing
+
+  // ---------- HELPERS ----------
+  function getVehicles() { return DB.get('vehicles'); }
+  function setVehicles(v) { DB.set('vehicles', v); }
+  function getDrivers() { return DB.get('drivers'); }
+  function setDrivers(v) { DB.set('drivers', v); }
+  function getTrips() { return DB.get('trips'); }
+  function setTrips(v) { DB.set('trips', v); }
+  function getMaintenance() { return DB.get('maintenance'); }
+  function setMaintenance(v) { DB.set('maintenance', v); }
+
+  function getVehicle(id) { return getVehicles().find(v => v.id === id); }
+  function getDriver(id) { return getDrivers().find(d => d.id === id); }
+  function getVehicleLabel(id) { const v = getVehicle(id); return v ? `${v.plate} (${v.model})` : 'Unknown'; }
+  function getDriverLabel(id) { const d = getDriver(id); return d ? d.name : 'Unknown'; }
+
+  // ---------- RENDER FUNCTIONS ----------
+  function renderAll() {
+    renderVehicles();
+    renderDrivers();
+    renderTrips();
+    renderMaintenance();
+    renderDashboard();
+  }
+
+  function renderVehicles() {
+    const list = getVehicles();
+    const el = document.getElementById('vehicleList');
+    if (!list.length) { el.innerHTML = '<div class="empty">No vehicles added yet.</div>'; return; }
+    el.innerHTML = `<table><thead><tr><th>Plate</th><th>Model</th><th>Brand</th><th>Year</th><th>KM</th><th style="width:140px;">Actions</th></tr></thead><tbody>
+      ${list.map(v => `<tr><td><strong>${v.plate}</strong></td><td>${v.model}</td><td>${v.brand||'-'}</td><td>${v.year||'-'}</td><td>${v.km||0}</td>
+      <td><div class="flex"><button class="btn btn-edit btn-sm" onclick="editItem('vehicle','${v.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteItem('vehicle','${v.id}')">Del</button></div></td></tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  function renderDrivers() {
+    const list = getDrivers();
+    const el = document.getElementById('driverList');
+    if (!list.length) { el.innerHTML = '<div class="empty">No drivers registered.</div>'; return; }
+    el.innerHTML = `<table><thead><tr><th>Name</th><th>License</th><th>Phone</th><th style="width:140px;">Actions</th></tr></thead><tbody>
+      ${list.map(d => `<tr><td><strong>${d.name}</strong></td><td>${d.license||'-'}</td><td>${d.phone||'-'}</td>
+      <td><div class="flex"><button class="btn btn-edit btn-sm" onclick="editItem('driver','${d.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteItem('driver','${d.id}')">Del</button></div></td></tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  function renderTrips() {
+    const list = getTrips();
+    const el = document.getElementById('tripList');
+    if (!list.length) { el.innerHTML = '<div class="empty">No missions assigned yet.</div>'; return; }
+    el.innerHTML = `<table><thead><tr><th>Date</th><th>Vehicle</th><th>Driver</th><th>Route</th><th>Distance (KM)</th><th style="width:140px;">Actions</th></tr></thead><tbody>
+      ${list.map(t => `<tr><td>${t.date||'-'}</td><td>${getVehicleLabel(t.vehicleId)}</td><td>${getDriverLabel(t.driverId)}</td><td>${t.route||'-'}</td><td>${t.distance||0}</td>
+      <td><div class="flex"><button class="btn btn-edit btn-sm" onclick="editItem('trip','${t.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteItem('trip','${t.id}')">Del</button></div></td></tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  function renderMaintenance() {
+    const list = getMaintenance();
+    const el = document.getElementById('maintenanceList');
+    if (!list.length) { el.innerHTML = '<div class="empty">No maintenance records.</div>'; return; }
+    el.innerHTML = `<table><thead><tr><th>Date</th><th>Vehicle</th><th>Service Type</th><th>Current KM</th><th>Next Due KM</th><th>Cost</th><th style="width:140px;">Actions</th></tr></thead><tbody>
+      ${list.map(m => {
+        const due = m.nextDueKm || '—';
+        const isOverdue = (m.nextDueKm && m.currentKm && m.nextDueKm <= m.currentKm);
+        return `<tr><td>${m.date||'-'}</td><td>${getVehicleLabel(m.vehicleId)}</td>
+        <td><span class="badge ${isOverdue ? 'badge-danger' : ''}">${m.serviceType||'Other'}</span></td>
+        <td>${m.currentKm||0}</td>
+        <td>${due} ${isOverdue ? '⚠️' : ''}</td>
+        <td>${m.cost ? '$' + m.cost : '-'}</td>
+        <td><div class="flex"><button class="btn btn-edit btn-sm" onclick="editItem('maintenance','${m.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('maintenance','${m.id}')">Del</button></div></td></tr>`;
+      }).join('')}
+    </tbody></table>`;
+  }
+
+  function renderDashboard() {
+    const vehicles = getVehicles();
+    const drivers = getDrivers();
+    const trips = getTrips();
+    const maintenance = getMaintenance();
+
+    // stats
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card"><div class="num">${vehicles.length}</div><div class="label">Vehicles</div></div>
+      <div class="stat-card"><div class="num">${drivers.length}</div><div class="label">Drivers</div></div>
+      <div class="stat-card"><div class="num">${trips.length}</div><div class="label">Missions</div></div>
+      <div class="stat-card"><div class="num">${maintenance.length}</div><div class="label">Maintenance Logs</div></div>
+    `;
+
+    // maintenance alerts
+    const now = new Date().toISOString().slice(0,10);
+    const overdue = maintenance.filter(m => m.nextDueKm && m.currentKm && m.nextDueKm <= m.currentKm);
+    const upcoming = maintenance.filter(m => m.nextDueKm && m.currentKm && (m.nextDueKm - m.currentKm) <= 1000 && (m.nextDueKm - m.currentKm) > 0);
+    const alertEl = document.getElementById('maintenanceAlerts');
+    if (overdue.length === 0 && upcoming.length === 0) {
+      alertEl.innerHTML = `<div class="alert-list" style="background:#f0fdf4;border-left-color:#22c55e;"><strong>✅ All clear.</strong> No maintenance due.</div>`;
+    } else {
+      let html = `<div class="alert-list"><strong>⚠️ Maintenance Alerts</strong><ul>`;
+      overdue.forEach(m => { html += `<li>🔴 Overdue: ${getVehicleLabel(m.vehicleId)} – ${m.serviceType} (due at ${m.nextDueKm} KM, current ${m.currentKm} KM)</li>`; });
+      upcoming.forEach(m => { html += `<li>🟡 Upcoming (soon): ${getVehicleLabel(m.vehicleId)} – ${m.serviceType} (due at ${m.nextDueKm} KM)</li>`; });
+      html += `</ul></div>`;
+      alertEl.innerHTML = html;
+    }
+  }
+
+  // ---------- CRUD OPERATIONS ----------
+  function deleteItem(type, id) {
+    if (!confirm(`Delete this ${type}?`)) return;
+    let list, setter;
+    if (type === 'vehicle') { list = getVehicles(); setter = setVehicles; }
+    else if (type === 'driver') { list = getDrivers(); setter = setDrivers; }
+    else if (type === 'trip') { list = getTrips(); setter = setTrips; }
+    else if (type === 'maintenance') { list = getMaintenance(); setter = setMaintenance; }
+    else return;
+    setter(list.filter(i => i.id !== id));
+    renderAll();
+  }
+
+  function editItem(type, id) {
+    let list, item;
+    if (type === 'vehicle') { list = getVehicles(); currentTab='vehicle'; }
+    else if (type === 'driver') { list = getDrivers(); currentTab='driver'; }
+    else if (type === 'trip') { list = getTrips(); currentTab='trip'; }
+    else if (type === 'maintenance') { list = getMaintenance(); currentTab='maintenance'; }
+    else return;
+    item = list.find(i => i.id === id);
+    if (!item) return;
+    editId = id;
+    openModal(type, item);
+  }
+
+  // ---------- MODAL ENGINE ----------
+  function openModal(type, data = null) {
+    const overlay = document.getElementById('modalOverlay');
+    const body = document.getElementById('modalBody');
+    const title = document.getElementById('modalTitle');
+    const saveBtn = document.getElementById('modalSaveBtn');
+    currentTab = type;
+    editId = data ? data.id : null;
+
+    let html = '';
+    const vehicles = getVehicles();
+    const drivers = getDrivers();
+
+    if (type === 'vehicle') {
+      title.textContent = data ? 'Edit Vehicle' : 'Add Vehicle';
+      html = `
+        <label>License Plate *</label><input id="f_plate" value="${data?.plate||''}" placeholder="ABC-1234">
+        <label>Model *</label><input id="f_model" value="${data?.model||''}" placeholder="Civic">
+        <div class="row"><div><label>Brand</label><input id="f_brand" value="${data?.brand||''}" placeholder="Honda"></div>
+        <div><label>Year</label><input id="f_year" value="${data?.year||''}" placeholder="2022"></div></div>
+        <label>Current KM</label><input id="f_km" type="number" value="${data?.km||0}" placeholder="0">
+      `;
+    } else if (type === 'driver') {
+      title.textContent = data ? 'Edit Driver' : 'Add Driver';
+      html = `
+        <label>Full Name *</label><input id="f_name" value="${data?.name||''}" placeholder="John Doe">
+        <label>License Number</label><input id="f_license" value="${data?.license||''}" placeholder="DL-123456">
+        <label>Phone</label><input id="f_phone" value="${data?.phone||''}" placeholder="+1 234 567 890">
+      `;
+    } else if (type === 'trip') {
+      title.textContent = data ? 'Edit Mission' : 'New Daily Mission';
+      html = `
+        <label>Date</label><input id="f_date" type="date" value="${data?.date||''}">
+        <label>Vehicle *</label><select id="f_vehicleId"><option value="">Select Vehicle</option>
+          ${vehicles.map(v => `<option value="${v.id}" ${data?.vehicleId===v.id?'selected':''}>${v.plate} - ${v.model}</option>`).join('')}
+        </select>
+        <label>Driver *</label><select id="f_driverId"><option value="">Select Driver</option>
+          ${drivers.map(d => `<option value="${d.id}" ${data?.driverId===d.id?'selected':''}>${d.name}</option>`).join('')}
+        </select>
+        <label>Route / Description</label><input id="f_route" value="${data?.route||''}" placeholder="Downtown to Airport">
+        <label>Distance (KM)</label><input id="f_distance" type="number" value="${data?.distance||0}" placeholder="0">
+      `;
+    } else if (type === 'maintenance') {
+      title.textContent = data ? 'Edit Maintenance' : 'Add Maintenance';
+      // service intervals
+      const intervals = { 'Oil Change': 5000, 'Tire Rotation': 10000, 'Brake Service': 20000, 'General Inspection': 15000, 'Other': 0 };
+      const selectedService = data?.serviceType || 'Oil Change';
+      html = `
+        <label>Date</label><input id="f_date" type="date" value="${data?.date||''}">
+        <label>Vehicle *</label><select id="f_vehicleId"><option value="">Select Vehicle</option>
+          ${vehicles.map(v => `<option value="${v.id}" ${data?.vehicleId===v.id?'selected':''}>${v.plate} - ${v.model}</option>`).join('')}
+        </select>
+        <label>Service Type *</label>
+        <select id="f_serviceType" onchange="updateMaintenanceDue()">
+          ${Object.keys(intervals).map(k => `<option value="${k}" ${selectedService===k?'selected':''}>${k}</option>`).join('')}
+        </select>
+        <label>Current KM</label><input id="f_currentKm" type="number" value="${data?.currentKm||0}" placeholder="0" oninput="updateMaintenanceDue()">
+        <label>Next Due KM (auto-calculated, or edit manually)</label>
+        <input id="f_nextDueKm" type="number" value="${data?.nextDueKm||''}" placeholder="Calculated automatically">
+        <label>Cost ($)</label><input id="f_cost" type="number" step="0.01" value="${data?.cost||''}" placeholder="0.00">
+        <label>Notes</label><textarea id="f_notes" rows="2">${data?.notes||''}</textarea>
+      `;
+    }
+
+    body.innerHTML = html;
+    overlay.classList.add('open');
+    // store reference to save
+    saveBtn.onclick = () => saveItem(type);
+    if (type === 'maintenance') setTimeout(updateMaintenanceDue, 50);
+  }
+
+  window.updateMaintenanceDue = function() {
+    const service = document.getElementById('f_serviceType')?.value || 'Oil Change';
+    const currentKm = parseFloat(document.getElementById('f_currentKm')?.value) || 0;
+    const intervals = { 'Oil Change': 5000, 'Tire Rotation': 10000, 'Brake Service': 20000, 'General Inspection': 15000, 'Other': 0 };
+    const due = currentKm + (intervals[service] || 0);
+    const dueField = document.getElementById('f_nextDueKm');
+    if (dueField && !dueField.dataset.userEdited) {
+      dueField.value = due > 0 ? due : '';
+    }
+    // allow manual override
+    dueField?.addEventListener('input', function() { this.dataset.userEdited = 'true'; });
+  };
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    editId = null;
+  }
+
+  function saveItem(type) {
+    const data = {};
+    const get = (id) => document.getElementById(id)?.value || '';
+    const getNum = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+
+    if (type === 'vehicle') {
+      data.plate = get('f_plate').trim(); data.model = get('f_model').trim(); data.brand = get('f_brand').trim();
+      data.year = get('f_year').trim(); data.km = getNum('f_km');
+      if (!data.plate || !data.model) { alert('Plate and Model are required.'); return; }
+      let list = getVehicles();
+      if (editId) { list = list.map(v => v.id === editId ? { ...v, ...data } : v); }
+      else { data.id = DB.genId(); list.push(data); }
+      setVehicles(list);
+    } else if (type === 'driver') {
+      data.name = get('f_name').trim(); data.license = get('f_license').trim(); data.phone = get('f_phone').trim();
+      if (!data.name) { alert('Name is required.'); return; }
+      let list = getDrivers();
+      if (editId) { list = list.map(d => d.id === editId ? { ...d, ...data } : d); }
+      else { data.id = DB.genId(); list.push(data); }
+      setDrivers(list);
+    } else if (type === 'trip') {
+      data.date = get('f_date'); data.vehicleId = get('f_vehicleId'); data.driverId = get('f_driverId');
+      data.route = get('f_route').trim(); data.distance = getNum('f_distance');
+      if (!data.vehicleId || !data.driverId) { alert('Please select a Vehicle and a Driver.'); return; }
+      let list = getTrips();
+      if (editId) { list = list.map(t => t.id === editId ? { ...t, ...data } : t); }
+      else { data.id = DB.genId(); list.push(data); }
+      setTrips(list);
+    } else if (type === 'maintenance') {
+      data.date = get('f_date'); data.vehicleId = get('f_vehicleId'); data.serviceType = get('f_serviceType');
+      data.currentKm = getNum('f_currentKm'); data.nextDueKm = getNum('f_nextDueKm');
+      data.cost = getNum('f_cost'); data.notes = get('f_notes').trim();
+      if (!data.vehicleId || !data.serviceType) { alert('Vehicle and Service Type are required.'); return; }
+      let list = getMaintenance();
+      if (editId) { list = list.map(m => m.id === editId ? { ...m, ...data } : m); }
+      else { data.id = DB.genId(); list.push(data); }
+      setMaintenance(list);
+    }
+    closeModal();
+    renderAll();
+  }
+
+  // ---------- NAVIGATION ----------
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      const tabId = 'tab-' + this.dataset.tab;
+      document.getElementById(tabId).classList.add('active');
+      renderAll(); // refresh data on switch
+    });
+  });
+
+  // ---------- INIT ----------
+  // seed some demo data if empty
+  if (getVehicles().length === 0 && getDrivers().length === 0) {
+    const v1 = { id: 'v1', plate: 'ABC-123', model: 'Civic', brand: 'Honda', year: '2022', km: 15400 };
+    const v2 = { id: 'v2', plate: 'XYZ-789', model: 'F-150', brand: 'Ford', year: '2021', km: 32400 };
+    setVehicles([v1, v2]);
+    setDrivers([{ id: 'd1', name: 'Sarah Connor', license: 'DL-007', phone: '+1 555 0101' }, { id: 'd2', name: 'John Matrix', license: 'DL-008', phone: '+1 555 0102' }]);
+    setTrips([{ id: 't1', date: '2026-07-26', vehicleId: 'v1', driverId: 'd1', route: 'Office to Depot', distance: 45 }]);
+    setMaintenance([{ id: 'm1', date: '2026-06-01', vehicleId: 'v1', serviceType: 'Oil Change', currentKm: 12000, nextDueKm: 17000, cost: 89.99, notes: 'Synthetic oil' }]);
+  }
+
+  renderAll();
+
+  // close modal on overlay click
+  document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+</script>
+</body>
+</html>
