@@ -1,5 +1,5 @@
 
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -316,7 +316,7 @@
       .from('prophets')
       .select('*')
       .order('era_order', { ascending:true });
-    if(error){ console.error(error); return; }
+    if(error){ console.error('loadProphets error:', error); return; }
     prophets = data;
     renderSilsila();
   }
@@ -344,7 +344,7 @@
       .select('*')
       .eq('prophet_id', prophetId)
       .order('story_order', { ascending:true });
-    if(error){ console.error(error); return; }
+    if(error){ console.error('loadProphetStories error:', error); return; }
     if(!stories.length) return;
     renderStory(stories[0]); // show first story for that prophet
   }
@@ -392,8 +392,8 @@
         <span class="title-en">${lang==='ar' ? story.title_en : story.title_ar}</span>
         <p>${lang==='ar' ? story.summary_ar : story.summary_en}</p>
 
-        ${versesHtml ? `<span class="section-label">${lang==='ar'?'الآيات':'Verses'}</span>${versesHtml}`: ''}
-        ${quizHtml ? `<span class="section-label">${lang==='ar'?'اختبر نفسك':'Test yourself'}</span>${quizHtml}`: ''}
+        ${versesHtml ? `<span class="section-label">${lang==='ar'?'الآيات':'Verses'}</span>${versesHtml}` : ''}
+        ${quizHtml ? `<span class="section-label">${lang==='ar'?'اختبر نفسك':'Test yourself'}</span>${quizHtml}` : ''}
       </div>`;
   }
 
@@ -405,7 +405,7 @@
       if(b.dataset.correct === 'true') b.classList.add('correct');
     });
     if(btn.dataset.correct !== 'true') btn.classList.add('wrong');
-    const explain = document.getElementById(explain-${qi});
+    const explain = document.getElementById(`explain-${qi}`);
     if(explain) explain.style.display = 'block';
   };
 
