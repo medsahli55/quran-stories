@@ -1,497 +1,562 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>قصص القرآن — Stories of the Quran</title>
+<title>The Watch — Daily Agenda</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Naskh+Arabic:wght@400;600&family=Literata:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#0F1B2D;
-    --ink-deep:#0A141F;
-    --parchment:#F3E9D2;
-    --parchment-dim:#e9dcc0;
-    --gold:#C9A24B;
-    --gold-bright:#E0BE6E;
-    --teal:#1B4B4A;
-    --rose:#8B3A3A;
-    --ivory:#EDE6D6;
+    --hull:#11161a;
+    --hull-2:#161d22;
+    --plate:#1c252b;
+    --plate-2:#212b32;
+    --brass:#b8935a;
+    --brass-hi:#dcb877;
+    --brass-dark:#7d5d38;
+    --cream:#ece2cd;
+    --verdigris:#3e6b62;
+    --verdigris-hi:#5b968a;
+    --amber:#d98e3f;
+    --ink:#a9a196;
+    --ink-dim:#726b60;
+    --danger:#a85a44;
   }
   *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
   body{
-    margin:0;
     background:
-      radial-gradient(ellipse at top, #16263c 0%, var(--ink) 45%, var(--ink-deep) 100%);
-    color:var(--ivory);
-    font-family:'Literata', 'Noto Naskh Arabic', serif;
+      radial-gradient(ellipse at 20% -10%, rgba(184,147,90,0.06), transparent 45%),
+      radial-gradient(ellipse at 90% 110%, rgba(62,107,98,0.08), transparent 50%),
+      var(--hull);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
     min-height:100vh;
   }
-  [lang-ar] { font-family:'Noto Naskh Arabic', serif; }
+  ::selection{background:var(--brass-dark); color:var(--cream);}
 
+  /* ---------- Lock screen ---------- */
+  #lock{
+    position:fixed; inset:0; z-index:50;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--hull);
+  }
+  #lock.hidden{display:none;}
+  .lock-plate{
+    background:var(--plate);
+    border:1px solid var(--brass-dark);
+    border-radius:10px;
+    padding:36px 32px;
+    width:min(320px, 88vw);
+    text-align:center;
+    box-shadow:0 0 0 1px rgba(184,147,90,0.08), 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .lock-plate h2{
+    font-family:'Fraunces', serif; font-weight:600; letter-spacing:0.04em;
+    color:var(--brass-hi); margin:0 0 6px;
+  }
+  .lock-plate p{font-size:12.5px; color:var(--ink-dim); margin:0 0 20px;}
+  #lock-input{
+    width:100%; padding:12px 14px; font-size:20px; letter-spacing:0.3em;
+    text-align:center; font-family:'IBM Plex Mono', monospace;
+    background:var(--hull-2); border:1px solid var(--brass-dark); border-radius:6px;
+    color:var(--cream); outline:none; margin-bottom:14px;
+  }
+  #lock-input:focus{border-color:var(--brass);}
+  .lock-btn{
+    width:100%; padding:11px; border-radius:6px; border:1px solid var(--brass-dark);
+    background:linear-gradient(180deg, var(--plate-2), var(--plate));
+    color:var(--brass-hi); font-family:'IBM Plex Mono', monospace; font-size:13px;
+    letter-spacing:0.08em; cursor:pointer;
+  }
+  .lock-btn:hover{border-color:var(--brass);}
+  #lock-err{color:var(--danger); font-size:12px; height:16px; margin-top:8px;}
+  #lock-skip{margin-top:14px; font-size:11px; color:var(--ink-dim); cursor:pointer; text-decoration:underline; text-underline-offset:2px;}
+
+  /* ---------- Header / Chronometer ---------- */
   header{
+    padding:34px 20px 22px;
     text-align:center;
-    padding:48px 20px 32px;
-    border-bottom:1px solid rgba(201,162,75,0.25);
+    border-bottom:1px solid rgba(184,147,90,0.15);
   }
-  header h1{
-    font-family:'Amiri', serif;
-    font-size:2.6rem;
-    margin:0;
-    color:var(--gold-bright);
-    letter-spacing:0.5px;
+  .brandline{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.35em;
+    color:var(--ink-dim); text-transform:uppercase; margin-bottom:14px;
   }
-  header .subtitle{
-    font-family:'Cormorant Garamond', serif;
-    font-style:italic;
-    color:var(--ivory);
-    opacity:0.75;
-    font-size:1.15rem;
-    margin-top:6px;
+  h1.title{
+    font-family:'Fraunces', serif; font-weight:700; font-optical-sizing:auto;
+    font-size:clamp(28px, 7vw, 46px); letter-spacing:0.02em;
+    color:var(--brass-hi); margin:0 0 20px;
+    text-shadow:0 1px 0 rgba(0,0,0,0.6), 0 0 30px rgba(184,147,90,0.12);
   }
-  .lang-toggle{
-    margin-top:18px;
-    display:inline-flex;
-    border:1px solid var(--gold);
-    border-radius:999px;
-    overflow:hidden;
-  }
-  .lang-toggle button{
-    background:transparent;
-    color:var(--ivory);
-    border:none;
-    padding:8px 22px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.8rem;
-    letter-spacing:1px;
-    cursor:pointer;
-    transition:background 0.2s;
-  }
-  .lang-toggle button.active{
-    background:var(--gold);
-    color:var(--ink-deep);
-    font-weight:600;
-  }
-
-  .layout{
-    display:grid;
-    grid-template-columns:280px 1fr;
-    gap:0;
-    max-width:1200px;
-    margin:0 auto;
-    min-height:70vh;
-  }
-  @media (max-width:760px){
-    .layout{grid-template-columns:1fr;}
-  }
-
-  /* ---- Silsila (the timeline thread) ---- */
-  .silsila{
+  .chrono-wrap{display:flex; align-items:center; justify-content:center; gap:22px; flex-wrap:wrap;}
+  .chrono{
+    width:118px; height:118px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--plate-2), var(--plate) 70%);
+    border:3px solid var(--brass-dark);
+    box-shadow:inset 0 0 14px rgba(0,0,0,0.6), 0 0 0 6px var(--hull-2), 0 0 0 7px var(--brass-dark);
     position:relative;
-    padding:48px 30px;
   }
-  .silsila::before{
-    content:"";
-    position:absolute;
-    top:48px; bottom:48px;
-    right:59px;
-    width:2px;
-    background:linear-gradient(var(--gold), var(--gold) 80%, transparent);
-    opacity:0.6;
-  }
-  .prophet-node{
+  .chrono .tick{position:absolute; width:2px; height:8px; background:var(--brass); left:50%; top:4px; transform-origin:1px 55px;}
+  .chrono .hand{position:absolute; left:50%; top:50%; transform-origin:50% 100%; background:var(--cream); border-radius:2px;}
+  .chrono .hand.h{width:3px; height:28px; margin-left:-1.5px; margin-top:-28px; background:var(--brass-hi);}
+  .chrono .hand.m{width:2px; height:40px; margin-left:-1px; margin-top:-40px; background:var(--cream);}
+  .chrono .hand.s{width:1px; height:44px; margin-left:-0.5px; margin-top:-44px; background:var(--amber);}
+  .chrono .pin{position:absolute; width:7px; height:7px; border-radius:50%; background:var(--brass-hi); left:50%; top:50%; margin:-3.5px 0 0 -3.5px;}
+  .date-block{font-family:'IBM Plex Mono', monospace; text-align:left;}
+  .date-block .day{font-size:20px; color:var(--cream); letter-spacing:0.03em;}
+  .date-block .sub{font-size:12px; color:var(--ink-dim); margin-top:4px;}
+
+  main{max-width:960px; margin:0 auto; padding:28px 16px 60px;}
+
+  .grid{display:grid; grid-template-columns:1fr; gap:18px;}
+  @media(min-width:720px){.grid{grid-template-columns:1fr 1fr;}}
+
+  .plaque{
+    background:linear-gradient(180deg, var(--plate-2), var(--plate));
+    border:1px solid var(--brass-dark);
+    border-radius:8px;
+    padding:18px 18px 16px;
     position:relative;
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding:14px 0;
-    cursor:pointer;
-    flex-direction:row-reverse;
+    box-shadow:0 8px 20px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.02);
   }
-  .prophet-node .dot{
-    width:14px; height:14px;
-    border-radius:50%;
-    background:var(--ink);
-    border:2px solid var(--gold);
-    flex-shrink:0;
-    z-index:1;
-    transition:all 0.25s;
+  .plaque::before, .plaque::after,
+  .plaque .r2::before, .plaque .r2::after{
+    content:''; position:absolute; width:6px; height:6px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--brass-hi), var(--brass-dark));
+    box-shadow:inset 0 0 1px rgba(0,0,0,0.6);
   }
-  .prophet-node.active .dot{
-    background:var(--gold-bright);
-    box-shadow:0 0 12px var(--gold-bright);
-  }
-  .prophet-node .names{
-    text-align:right;
-  }
-  .prophet-node .name-ar{
-    font-family:'Amiri', serif;
-    font-size:1.15rem;
-    color:var(--ivory);
-    display:block;
-  }
-  .prophet-node .name-en{
-    font-family:'Cormorant Garamond', serif;
-    font-style:italic;
-    font-size:0.85rem;
-    color:var(--gold);
-    display:block;
-    opacity:0.8;
-  }
-  .prophet-node.active .name-ar{ color:var(--gold-bright); }
+  .plaque::before{top:8px; left:8px;}
+  .plaque::after{top:8px; right:8px;}
+  .plaque .r2::before{position:absolute; bottom:8px; left:8px; content:'';}
+  .plaque .r2::after{position:absolute; bottom:8px; right:8px; content:'';}
 
-  /* ---- Story panel ---- */
-  .story-panel{
-    padding:48px 40px;
-    border-right:1px solid rgba(201,162,75,0.15);
+  .plaque-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .plaque-head h3{
+    font-family:'Fraunces', serif; font-weight:600; font-size:16.5px; margin:0;
+    color:var(--brass-hi); letter-spacing:0.01em;
   }
-  .story-card{
-    background:var(--parchment);
-    color:var(--ink-deep);
-    border-radius:6px;
-    padding:36px 40px;
-    position:relative;
-    box-shadow:0 20px 50px rgba(0,0,0,0.35);
+  .plaque-head .eyebrow{
+    display:block; font-family:'IBM Plex Mono', monospace; font-size:10px;
+    letter-spacing:0.18em; color:var(--verdigris-hi); text-transform:uppercase; margin-bottom:3px;
   }
-  .story-card::before{
-    content:"";
-    position:absolute;
-    inset:10px;
-    border:1px solid var(--gold);
-    border-radius:3px;
-    pointer-events:none;
+  .dial-btn{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.06em;
+    background:var(--hull-2); color:var(--ink); border:1px solid var(--brass-dark);
+    border-radius:20px; padding:6px 12px; cursor:pointer; white-space:nowrap;
   }
-  .story-card h2{
-    font-family:'Amiri', serif;
-    font-size:1.9rem;
-    margin:0 0 4px;
-    color:var(--teal);
-  }
-  .story-card .title-en{
-    font-family:'Cormorant Garamond', serif;
-    font-style:italic;
-    color:var(--rose);
-    font-size:1.1rem;
-    margin-bottom:22px;
-    display:block;
-  }
-  .story-card p{
-    line-height:1.9;
-    font-size:1.05rem;
-  }
-  .empty-state{
-    color:var(--ivory);
-    opacity:0.6;
-    font-family:'Cormorant Garamond', serif;
-    font-style:italic;
-    font-size:1.3rem;
-    text-align:center;
-    margin-top:100px;
-  }
+  .dial-btn:hover{border-color:var(--brass); color:var(--cream);}
+  .dial-btn:disabled{opacity:0.5; cursor:wait;}
 
-  .section-label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.7rem;
-    letter-spacing:2px;
-    color:var(--gold);
-    text-transform:uppercase;
-    margin:34px 0 12px;
-    display:block;
-  }
+  .plaque-body{font-size:13.5px; line-height:1.6; color:var(--ink); min-height:30px;}
+  .plaque-body p{margin:0 0 8px;}
+  .plaque-body ul{margin:6px 0; padding-left:18px;}
+  .plaque-body li{margin-bottom:5px;}
+  .empty-note{color:var(--ink-dim); font-style:italic; font-size:12.5px;}
+  .synced{font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--ink-dim); margin-top:10px; letter-spacing:0.03em;}
 
-  .verse{
-    background:rgba(27,75,74,0.08);
-    border-right:3px solid var(--teal);
-    padding:16px 20px;
-    margin-bottom:14px;
-    border-radius:4px;
+  /* Quran panels */
+  .aya-arabic{
+    font-family:'Fraunces', serif; font-size:20px; line-height:2; color:var(--cream);
+    direction:rtl; text-align:right; margin-bottom:10px;
   }
-  .verse .ref{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.75rem;
-    color:var(--teal);
-    display:block;
-    margin-bottom:6px;
+  .aya-translation{font-style:italic; color:var(--ink); font-size:13.5px;}
+  .aya-ref{
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--verdigris-hi);
+    margin-top:8px; letter-spacing:0.04em;
   }
-  .verse .ar{
-    font-family:'Amiri', serif;
-    font-size:1.3rem;
-    line-height:2;
-    display:block;
-    margin-bottom:6px;
+  .surah-head{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--verdigris-hi);
+    margin-bottom:12px; letter-spacing:0.03em;
   }
-  .verse .en{
-    font-family:'Cormorant Garamond', serif;
-    font-style:italic;
-    font-size:1rem;
-    opacity:0.8;
+  .surah-scroll{max-height:440px; overflow-y:auto; padding-right:8px;}
+  .surah-ayah-ar{
+    font-family:'Fraunces', serif; font-size:18px; line-height:2; color:var(--cream);
+    direction:rtl; text-align:right; margin-bottom:2px;
   }
+  .surah-ayah-num{font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--brass-hi);}
+  .surah-ayah-en{font-style:italic; color:var(--ink); font-size:12.5px; margin-bottom:14px;}
 
-  /* ---- Quiz ---- */
-  .quiz-box{
-    background:rgba(139,58,58,0.08);
-    border:1px solid var(--rose);
-    border-radius:6px;
-    padding:22px 26px;
-    margin-top:18px;
-  }
-  .quiz-box .q{
-    font-weight:600;
-    margin-bottom:14px;
-    font-size:1.05rem;
-  }
-  .choice{
-    display:block;
-    width:100%;
-    text-align:right;
-    background:var(--parchment-dim);
-    border:1px solid rgba(139,58,58,0.3);
-    color:var(--ink-deep);
-    padding:10px 16px;
-    margin-bottom:8px;
-    border-radius:4px;
-    cursor:pointer;
-    font-family:inherit;
-    font-size:0.95rem;
-    transition:all 0.2s;
-  }
-  .choice:hover{ background:#e0d2ab; }
-  .choice.correct{ background:#c8dcb8; border-color:#5a7a3a; }
-  .choice.wrong{ background:#e0b8b8; border-color:var(--rose); }
-  .quiz-explain{
-    margin-top:12px;
-    font-style:italic;
-    font-size:0.9rem;
-    color:var(--teal);
-    display:none;
-  }
+  .full{grid-column:1/-1;}
 
-  /* ---- Story list picker ---- */
-  .story-list{
-    background:var(--parchment);
-    border-radius:6px;
-    padding:36px 40px;
-    position:relative;
-    box-shadow:0 20px 50px rgba(0,0,0,0.35);
+  footer{
+    text-align:center; padding:24px 16px 40px; font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px; color:var(--ink-dim); letter-spacing:0.08em;
   }
-  .story-list-item{
-    display:block;
-    width:100%;
-    text-align:right;
-    background:var(--parchment-dim);
-    border:1px solid rgba(27,75,74,0.3);
-    color:var(--ink-deep);
-    padding:16px 20px;
-    margin-bottom:10px;
-    border-radius:4px;
-    cursor:pointer;
-    font-family:inherit;
-    transition:all 0.2s;
-  }
-  .story-list-item:hover{ background:#e0d2ab; }
-  .story-list-item .sl-ar{
-    font-family:'Amiri', serif;
-    font-size:1.2rem;
-    display:block;
-    color:var(--teal);
-  }
-  .story-list-item .sl-en{
-    font-family:'Cormorant Garamond', serif;
-    font-style:italic;
-    font-size:0.9rem;
-    display:block;
-    color:var(--rose);
-    margin-top:2px;
-  }
-  .back-link{
-    background:none;
-    border:none;
-    color:var(--teal);
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.75rem;
-    letter-spacing:1px;
-    cursor:pointer;
-    padding:0;
-    margin-bottom:16px;
-    display:inline-block;
-  }
-  .back-link:hover{ text-decoration:underline; }
 </style>
 </head>
 <body>
 
+<div id="lock">
+  <div class="lock-plate">
+    <h2>THE WATCH</h2>
+    <p id="lock-sub">Enter passcode to open the agenda</p>
+    <input id="lock-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" onkeydown="if(event.key==='Enter')tryUnlock()">
+    <div id="lock-err"></div>
+    <button class="lock-btn" id="lock-btn" onclick="tryUnlock()">UNLOCK</button>
+    <div id="lock-skip" onclick="document.getElementById('lock').classList.add('hidden')">skip for now</div>
+  </div>
+</div>
+
 <header>
-  <h1 id="app-title">قصص القرآن</h1>
-  <div class="subtitle" id="app-subtitle">Stories of the Quran, from Adam to the Seal of the Prophets</div>
-  <div class="lang-toggle">
-    <button id="btn-ar" class="active" onclick="setLang('ar')">ع</button>
-    <button id="btn-en" onclick="setLang('en')">EN</button>
+  <div class="brandline">Doha · Engine Room Log</div>
+  <h1 class="title">The Watch</h1>
+  <div class="chrono-wrap">
+    <div class="chrono" id="chrono">
+      <div class="hand h" id="hand-h"></div>
+      <div class="hand m" id="hand-m"></div>
+      <div class="hand s" id="hand-s"></div>
+      <div class="pin"></div>
+    </div>
+    <div class="date-block">
+      <div class="day" id="date-day">—</div>
+      <div class="sub" id="date-sub">loading local time…</div>
+    </div>
   </div>
 </header>
 
-<div class="layout">
-  <nav class="silsila" id="silsila">
-    <!-- prophet nodes injected here -->
-  </nav>
+<main>
+  <div class="grid">
 
-  <main class="story-panel" id="story-panel">
-    <div class="empty-state" id="empty-state">اختر نبياً من السلسلة لتبدأ القصة<br><span style="font-size:0.9rem">Choose a prophet from the timeline to begin</span></div>
-  </main>
-</div>
+    <div class="plaque full">
+      <div class="r2"></div>
+      <div class="plaque-head">
+        <div>
+          <span class="eyebrow">Inbox</span>
+          <h3>Mail Briefing</h3>
+        </div>
+        <button class="dial-btn" id="btn-mail" onclick="runMail()">READ INBOX</button>
+      </div>
+      <div class="plaque-body" id="body-mail"><p class="empty-note">Tap "Read Inbox" for a summary of what's new and what needs a reply.</p></div>
+      <div class="synced" id="sync-mail"></div>
+      <div class="synced" style="margin-top:4px; opacity:0.8;">Note: live in-app inbox reads can be unreliable right now. If it times out, just ask Claude in chat to read your inbox — that route works instantly.</div>
+    </div>
 
-<!-- Supabase client -->
-<script type="module">
-  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+    <div class="plaque full">
+      <div class="r2"></div>
+      <div class="plaque-head">
+        <div>
+          <span class="eyebrow">Daily Reflection</span>
+          <h3>Aya of the Day</h3>
+        </div>
+        <button class="dial-btn" id="btn-aya" onclick="loadAyaOfDay(true)">NEW AYA</button>
+      </div>
+      <div class="plaque-body" id="body-aya"><p class="empty-note">Loading today's Aya…</p></div>
+      <div class="synced" id="sync-aya"></div>
+    </div>
 
-  const SUPABASE_URL = 'https://ozqmwrjwjyqdtbpawbxw.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_gy-Wwpc_gkQJYPSDXpPrfg_HFxhaB8r';
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <div class="plaque full">
+      <div class="r2"></div>
+      <div class="plaque-head">
+        <div>
+          <span class="eyebrow">Daily Reading</span>
+          <h3>Surah of the Day</h3>
+        </div>
+        <button class="dial-btn" id="btn-surah" onclick="loadSurahOfDay(true)">NEW SURAH</button>
+      </div>
+      <div class="plaque-body" id="body-surah"><p class="empty-note">Loading today's Surah…</p></div>
+      <div class="synced" id="sync-surah"></div>
+    </div>
 
-  let lang = 'ar';
-  let prophets = [];
-  let activeProphetId = null;
+    <div class="plaque">
+      <div class="r2"></div>
+      <div class="plaque-head">
+        <div><span class="eyebrow">Engineering</span><h3>Predictive Maintenance</h3></div>
+        <button class="dial-btn" id="btn-pm" onclick="runBriefing('pm')">FETCH</button>
+      </div>
+      <div class="plaque-body" id="body-pm"><p class="empty-note">Latest techniques and vendor moves.</p></div>
+      <div class="synced" id="sync-pm"></div>
+    </div>
 
-  window.setLang = function(l){
-    lang = l;
-    document.getElementById('btn-ar').classList.toggle('active', l==='ar');
-    document.getElementById('btn-en').classList.toggle('active', l==='en');
-    document.body.setAttribute('dir', l==='ar' ? 'rtl' : 'ltr');
-    renderSilsila();
-    if(activeProphetId) loadProphetStories(activeProphetId);
-  };
+    <div class="plaque">
+      <div class="r2"></div>
+      <div class="plaque-head">
+        <div><span class="eyebrow">Market</span><h3>Electric Vehicles</h3></div>
+        <button class="dial-btn" id="btn-ev" onclick="runBriefing('ev')">FETCH</button>
+      </div>
+      <div class="plaque-body" id="body-ev"><p class="empty-note">Newest models and price points.</p></div>
+      <div class="synced" id="sync-ev"></div>
+    </div>
 
-  async function loadProphets(){
-    const { data, error } = await supabase
-      .from('prophets')
-      .select('*')
-      .order('era_order', { ascending:true });
-    if(error){ console.error(error); return; }
-    prophets = data;
-    renderSilsila();
+    <div class="plaque">
+      <div class="r2"></div>
+      <div class="plaque-head">
+        <div><span class="eyebrow">Home</span><h3>Tunisia News</h3></div>
+        <button class="dial-btn" id="btn-tn" onclick="runBriefing('tn')">FETCH</button>
+      </div>
+      <div class="plaque-body" id="body-tn"><p class="empty-note">What's happening back home.</p></div>
+      <div class="synced" id="sync-tn"></div>
+    </div>
+
+    <div class="plaque">
+      <div class="r2"></div>
+      <div class="plaque-head">
+        <div><span class="eyebrow">Anthropic</span><h3>Claude Updates</h3></div>
+        <button class="dial-btn" id="btn-cl" onclick="runBriefing('cl')">FETCH</button>
+      </div>
+      <div class="plaque-body" id="body-cl"><p class="empty-note">Newest Claude models and modules.</p></div>
+      <div class="synced" id="sync-cl"></div>
+    </div>
+
+  </div>
+</main>
+
+<footer>ALL SYSTEMS NOMINAL — REFRESH ANY DIAL TO RE-SYNC</footer>
+
+<script>
+/* ---------------- Passcode lock ---------------- */
+let memoryPasscode = null; // fallback if persistent storage is unavailable
+async function getPasscode(){
+  if(memoryPasscode) return memoryPasscode;
+  try{
+    const r = await window.storage.get('watch-passcode', false);
+    return r ? r.value : null;
+  }catch(e){
+    return null;
   }
-
-  function renderSilsila(){
-    const el = document.getElementById('silsila');
-    el.innerHTML = '';
-    prophets.forEach(p => {
-      const node = document.createElement('div');
-      node.className = 'prophet-node' + (p.id===activeProphetId ? ' active':'');
-      node.onclick = () => { activeProphetId = p.id; loadProphetStories(p.id); renderSilsila(); };
-      node.innerHTML = `
-        <div class="dot"></div>
-        <div class="names">
-          <span class="name-ar">${p.name_ar}</span>
-          <span class="name-en">${p.name_en}</span>
-        </div>`;
-      el.appendChild(node);
-    });
+}
+async function tryUnlock(){
+  const errEl = document.getElementById('lock-err');
+  errEl.textContent = '';
+  const saved = await getPasscode();
+  const val = document.getElementById('lock-input').value;
+  if(!val){
+    errEl.textContent = 'Type a passcode first';
+    return;
   }
-
-  let currentProphetStories = [];
-
-  async function loadProphetStories(prophetId){
-    const { data: stories, error } = await supabase
-      .from('stories')
-      .select('*')
-      .eq('prophet_id', prophetId)
-      .order('story_order', { ascending:true });
-    if(error){ console.error(error); return; }
-    if(!stories.length) return;
-    currentProphetStories = stories;
-    if(stories.length === 1){
-      renderStory(stories[0]);
-    } else {
-      renderStoryList(stories);
+  if(!saved){
+    try{
+      await window.storage.set('watch-passcode', val, false);
+    }catch(e){
+      memoryPasscode = val; // storage unavailable — keep it for this session at least
     }
+    document.getElementById('lock').classList.add('hidden');
+    return;
   }
-
-  window.renderStoryList = function(stories){
-    document.getElementById('empty-state')?.remove();
-    const panel = document.getElementById('story-panel');
-    const itemsHtml = stories.map(s => `
-      <button class="story-list-item" onclick="selectStory(${s.id})">
-        <span class="sl-ar">${s.title_ar}</span>
-        <span class="sl-en">${s.title_en}</span>
-      </button>`).join('');
-    panel.innerHTML = `
-      <div class="story-list">
-        <span class="section-label">${lang==='ar' ? 'اختر قصة' : 'Choose a story'}</span>
-        ${itemsHtml}
-      </div>`;
-  };
-
-  window.selectStory = function(storyId){
-    const story = currentProphetStories.find(s => s.id === storyId);
-    if(story) renderStory(story, currentProphetStories.length > 1);
-  };
-
-  async function renderStory(story, showBack){
-    document.getElementById('empty-state')?.remove();
-    const panel = document.getElementById('story-panel');
-
-    const { data: verses } = await supabase
-      .from('story_verses')
-      .select('*')
-      .eq('story_id', story.id)
-      .order('verse_order', { ascending:true });
-
-    const { data: quiz } = await supabase
-      .from('quiz_questions')
-      .select('*')
-      .eq('story_id', story.id);
-
-    const versesHtml = (verses||[]).map(v => `
-      <div class="verse">
-        <span class="ref">${lang==='ar' ? v.surah_name_ar : v.surah_name_en} · ${v.ayah_ref}</span>
-        <span class="ar">${v.arabic_text}</span>
-        <span class="en">${v.translation_en}</span>
-      </div>`).join('');
-
-    const quizHtml = (quiz||[]).map((q, qi) => {
-      const questionText = lang==='ar' ? q.question_ar : q.question_en;
-      const choices = lang==='ar' ? q.choices_ar : q.choices_en;
-      const choicesHtml = choices.map((c, ci) => `
-        <button class="choice" data-correct="${ci===q.correct_index}" onclick="handleChoice(this, '${qi}')">${c}</button>
-      `).join('');
-      const explain = lang==='ar' ? q.explanation_ar : q.explanation_en;
-      return `
-        <div class="quiz-box">
-          <div class="q">${questionText}</div>
-          ${choicesHtml}
-          <div class="quiz-explain" id="explain-${qi}">${explain||''}</div>
-        </div>`;
-    }).join('');
-
-    const backHtml = showBack ? `
-      <button class="back-link" onclick="renderStoryList(currentProphetStories)">
-        ${lang==='ar' ? '\u2192 كل القصص' : '\u2190 All stories'}
-      </button>` : '';
-
-    panel.innerHTML = `
-      <div class="story-card">
-        ${backHtml}
-        <h2>${lang==='ar' ? story.title_ar : story.title_en}</h2>
-        <span class="title-en">${lang==='ar' ? story.title_en : story.title_ar}</span>
-        <p>${lang==='ar' ? story.summary_ar : story.summary_en}</p>
-
-        ${versesHtml ? `<span class="section-label">${lang==='ar'?'الآيات':'Verses'}</span>${versesHtml}` : ''}
-        ${quizHtml ? `<span class="section-label">${lang==='ar'?'اختبر نفسك':'Test yourself'}</span>${quizHtml}` : ''}
-      </div>`;
+  if(val === saved){
+    document.getElementById('lock').classList.add('hidden');
+  } else {
+    errEl.textContent = 'Incorrect passcode';
   }
+}
+(async()=>{
+  const saved = await getPasscode();
+  if(!saved){
+    document.getElementById('lock-sub').textContent = 'First time here — type a passcode to set it';
+    document.getElementById('lock-btn').textContent = 'SET PASSCODE';
+  }
+})();
 
-  window.handleChoice = function(btn, qi){
-    const group = btn.parentElement;
-    const buttons = group.querySelectorAll('.choice');
-    buttons.forEach(b => b.disabled = true);
-    buttons.forEach(b => {
-      if(b.dataset.correct === 'true') b.classList.add('correct');
+/* ---------------- Chronometer ---------------- */
+function tick(){
+  const now = new Date();
+  const h = now.getHours()%12, m = now.getMinutes(), s = now.getSeconds();
+  document.getElementById('hand-h').style.transform = `rotate(${h*30 + m*0.5}deg)`;
+  document.getElementById('hand-m').style.transform = `rotate(${m*6}deg)`;
+  document.getElementById('hand-s').style.transform = `rotate(${s*6}deg)`;
+  document.getElementById('date-day').textContent = now.toLocaleDateString(undefined, {weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('date-sub').textContent = now.toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'}) + ' local';
+}
+tick(); setInterval(tick, 1000);
+// ticks around the dial face
+(function drawTicks(){
+  const chrono = document.getElementById('chrono');
+  for(let i=0;i<12;i++){
+    const t = document.createElement('div');
+    t.className='tick';
+    t.style.transform = `rotate(${i*30}deg)`;
+    chrono.appendChild(t);
+  }
+})();
+
+/* ---------------- API helper (Claude briefings) ---------------- */
+async function callClaude({prompt, useWebSearch, useMcp, maxTokens}){
+  const body = { prompt, useWebSearch: !!useWebSearch, useMcp: !!useMcp, maxTokens: maxTokens || 1000 };
+  const fetchPromise = fetch("/.netlify/functions/ask-claude", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(body)
+  });
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(()=>reject(new Error('Timed out — the inbox search took too long. Try again.')), 85000);
+  });
+  const res = await Promise.race([fetchPromise, timeoutPromise]);
+  const data = await res.json();
+  if(!res.ok){
+    throw new Error((data && data.error && data.error.message) || ('Request failed: ' + res.status));
+  }
+  const texts = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text);
+  const joined = texts.join('\n\n');
+  if(joined) return joined;
+  if(data.stop_reason === 'max_tokens') return '(Response got cut off before finishing — try again, it usually completes on a retry.)';
+  return '(No summary came back — try again.)';
+}
+function nowStamp(){
+  return 'synced ' + new Date().toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+}
+function renderText(elId, text){
+  const el = document.getElementById(elId);
+  const paras = text.split(/\n{2,}/).map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+  el.innerHTML = paras;
+}
+
+/* ---------------- Mail ---------------- */
+async function runMail(){
+  const btn = document.getElementById('btn-mail');
+  btn.disabled = true; btn.textContent='READING…';
+  document.getElementById('body-mail').innerHTML = '<p class="empty-note">Scanning inbox… this can take up to a minute.</p>';
+  try{
+    const text = await callClaude({
+      useMcp:true,
+      maxTokens: 1200,
+      prompt:"Call the Gmail search_threads tool exactly ONE time, for my 10 most recent threads. Do not call get_thread or any other tool afterward — base your entire answer only on the subjects, senders, snippets, and labels already returned by that single search. Give me a short plain-text briefing, no markdown headers: 1) what's new worth knowing, 2) which of those look like they need a reply and why, 3) what looks safe to ignore. Keep it tight."
     });
-    if(btn.dataset.correct !== 'true') btn.classList.add('wrong');
-    const explain = document.getElementById(`explain-${qi}`);
-    if(explain) explain.style.display = 'block';
-  };
+    renderText('body-mail', text);
+    document.getElementById('sync-mail').textContent = nowStamp();
+  }catch(e){
+    document.getElementById('body-mail').innerHTML = '<p class="empty-note">' + (e.message || 'Could not reach the inbox. Try again.') + '</p>';
+  }
+  btn.disabled=false; btn.textContent='READ INBOX';
+}
 
-  loadProphets();
+/* ---------------- Web-search briefings ---------------- */
+const PROMPTS = {
+  pm: "Give me a concise, current briefing on the newest techniques and technologies in predictive maintenance (industrial/marine/rotating equipment context). Cover 3-4 notable recent developments with plain-text short paragraphs, no markdown headers, no numbered lists unless truly sequential.",
+  ev: "Give me a concise, current briefing on the newest electric vehicle models and their price points, covering a global mix of brands. Include approximate prices where available. Plain text, short paragraphs, no markdown headers.",
+  tn: "Give me a concise, current news briefing on what's happening in Tunisia right now — top 3-4 stories, political/economic/social. Plain text, short paragraphs, no markdown headers.",
+  cl: "Give me a concise, current briefing on the newest Claude models, tools, and modules released by Anthropic recently. Plain text, short paragraphs, no markdown headers."
+};
+async function runBriefing(key){
+  const btn = document.getElementById('btn-'+key);
+  const bodyEl = 'body-'+key;
+  btn.disabled = true; btn.textContent='FETCHING…';
+  document.getElementById(bodyEl).innerHTML = '<p class="empty-note">Searching…</p>';
+  try{
+    const text = await callClaude({useWebSearch:true, prompt: PROMPTS[key]});
+    renderText(bodyEl, text);
+    document.getElementById('sync-'+key).textContent = nowStamp();
+  }catch(e){
+    document.getElementById(bodyEl).innerHTML = '<p class="empty-note">Fetch failed. Try again.</p>';
+  }
+  btn.disabled=false; btn.textContent='FETCH';
+}
+
+/* ---------------- Aya of the Day ---------------- */
+function escapeHtmlQ(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+async function loadAyaOfDay(force){
+  const btn = document.getElementById('btn-aya');
+  const bodyEl = document.getElementById('body-aya');
+  const todayStr = new Date().toDateString();
+  let record = null;
+  try{
+    const raw = localStorage.getItem('aya-of-day');
+    record = raw ? JSON.parse(raw) : null;
+  }catch(e){ record = null; }
+
+  if(!force && record && record.date === todayStr){
+    renderAya(record);
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = force ? 'DRAWING…' : btn.textContent;
+  bodyEl.innerHTML = '<p class="empty-note">Drawing today\'s Aya…</p>';
+  try{
+    const globalNum = Math.floor(Math.random()*6236)+1; // total ayahs in the Quran
+    const res = await fetch(`https://api.alquran.cloud/v1/ayah/${globalNum}/editions/quran-uthmani,en.sahih`);
+    if(!res.ok) throw new Error('API error ' + res.status);
+    const data = await res.json();
+    const arabicEd = data.data[0];
+    const enEd = data.data[1];
+    record = {
+      date: todayStr,
+      arabic: arabicEd.text,
+      translation: enEd.text,
+      surahNameAr: arabicEd.surah.name,
+      surahNameEn: arabicEd.surah.englishName,
+      ayahNumInSurah: arabicEd.numberInSurah
+    };
+    try{ localStorage.setItem('aya-of-day', JSON.stringify(record)); }catch(e){}
+    renderAya(record);
+    document.getElementById('sync-aya').textContent = nowStamp();
+  }catch(e){
+    bodyEl.innerHTML = '<p class="empty-note">Could not load today\'s Aya. Try again.</p>';
+  }
+  btn.disabled = false; btn.textContent = 'NEW AYA';
+}
+function renderAya(r){
+  const el = document.getElementById('body-aya');
+  el.innerHTML = `
+    <p class="aya-arabic">${escapeHtmlQ(r.arabic)}</p>
+    <p class="aya-translation">${escapeHtmlQ(r.translation)}</p>
+    <p class="aya-ref">${escapeHtmlQ(r.surahNameEn)} (${escapeHtmlQ(r.surahNameAr)}) — Ayah ${r.ayahNumInSurah}</p>
+  `;
+  document.getElementById('sync-aya').textContent = nowStamp();
+}
+
+/* ---------------- Surah of the Day ---------------- */
+async function loadSurahOfDay(force){
+  const btn = document.getElementById('btn-surah');
+  const bodyEl = document.getElementById('body-surah');
+  const todayStr = new Date().toDateString();
+  let record = null;
+  try{
+    const raw = localStorage.getItem('surah-of-day');
+    record = raw ? JSON.parse(raw) : null;
+  }catch(e){ record = null; }
+
+  if(!force && record && record.date === todayStr){
+    renderSurah(record);
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = force ? 'DRAWING…' : btn.textContent;
+  bodyEl.innerHTML = '<p class="empty-note">Drawing today\'s Surah…</p>';
+  try{
+    const num = Math.floor(Math.random()*114)+1;
+    const res = await fetch(`https://api.alquran.cloud/v1/surah/${num}/editions/quran-uthmani,en.sahih`);
+    if(!res.ok) throw new Error('API error ' + res.status);
+    const data = await res.json();
+    const arabicEd = data.data[0];
+    const enEd = data.data[1];
+    const ayahs = arabicEd.ayahs.map((a,i)=>({ar:a.text, en:enEd.ayahs[i] ? enEd.ayahs[i].text : '', num:a.numberInSurah}));
+    record = {
+      date: todayStr,
+      number: num,
+      nameAr: arabicEd.name,
+      nameEn: arabicEd.englishName,
+      translationEn: arabicEd.englishNameTranslation,
+      revelationType: arabicEd.revelationType,
+      ayahs
+    };
+    try{ localStorage.setItem('surah-of-day', JSON.stringify(record)); }catch(e){}
+    renderSurah(record);
+    document.getElementById('sync-surah').textContent = nowStamp();
+  }catch(e){
+    bodyEl.innerHTML = '<p class="empty-note">Could not load today\'s Surah. Try again.</p>';
+  }
+  btn.disabled = false; btn.textContent = 'NEW SURAH';
+}
+function renderSurah(r){
+  const el = document.getElementById('body-surah');
+  let html = `<p class="surah-head">Surah ${r.number} · ${escapeHtmlQ(r.nameEn)} (${escapeHtmlQ(r.translationEn)}) · ${escapeHtmlQ(r.revelationType)} · ${escapeHtmlQ(r.nameAr)}</p>`;
+  html += `<div class="surah-scroll">`;
+  r.ayahs.forEach(a=>{
+    html += `<p class="surah-ayah-ar">${escapeHtmlQ(a.ar)} <span class="surah-ayah-num">(${a.num})</span></p>`;
+    html += `<p class="surah-ayah-en">${escapeHtmlQ(a.en)}</p>`;
+  });
+  html += `</div>`;
+  el.innerHTML = html;
+  document.getElementById('sync-surah').textContent = nowStamp();
+}
+
+/* ---------------- Init ---------------- */
+loadAyaOfDay(false);
+loadSurahOfDay(false);
 </script>
 </body>
 </html>
