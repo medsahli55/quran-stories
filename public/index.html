@@ -392,8 +392,8 @@
         <span class="title-en">${lang==='ar' ? story.title_en : story.title_ar}</span>
         <p>${lang==='ar' ? story.summary_ar : story.summary_en}</p>
 
-        ${versesHtml ? <span class="section-label">${lang==='ar'?'الآيات':'Verses'}</span>${versesHtml} : ''}
-        ${quizHtml ? <span class="section-label">${lang==='ar'?'اختبر نفسك':'Test yourself'}</span>${quizHtml} : ''}
+        ${versesHtml ? `<span class="section-label">${lang==='ar'?'الآيات':'Verses'}</span>${versesHtml}`: ''}
+        ${quizHtml ? `<span class="section-label">${lang==='ar'?'اختبر نفسك':'Test yourself'}</span>${quizHtml}`: ''}
       </div>`;
   }
 
