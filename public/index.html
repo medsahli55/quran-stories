@@ -352,10 +352,7 @@
       renderStoryPicker(stories);
     }
   }
-async function renderStory(story){
-    // ...existing code stays the same...
-  }
-  window.renderStory = renderStory;
+
   function renderStoryPicker(stories){
     document.getElementById('empty-state')?.remove();
     const panel = document.getElementById('story-panel');
@@ -364,7 +361,7 @@ async function renderStory(story){
         <h2>${lang==='ar' ? s.title_ar : s.title_en}</h2>
         <span class="title-en">${lang==='ar' ? s.title_en : s.title_ar}</span>
       </div>`).join('');
-    panel.innerHTML = `
+   panel.innerHTML = `
       <div class="section-label">${lang==='ar' ? 'اختر القصة' : 'Choose a story'}</div>
       ${cardsHtml}`;
   }
@@ -416,6 +413,7 @@ async function renderStory(story){
         ${quizHtml ? `<span class="section-label">${lang==='ar'?'اختبر نفسك':'Test yourself'}</span>${quizHtml}` : ''}
       </div>`;
   }
+  window.renderStory = renderStory;
 
   window.handleChoice = function(btn, qi){
     const group = btn.parentElement;
