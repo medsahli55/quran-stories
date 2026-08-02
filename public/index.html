@@ -346,7 +346,27 @@
       .order('story_order', { ascending:true });
     if(error){ console.error('loadProphetStories error:', error); return; }
     if(!stories.length) return;
-    renderStory(stories[0]); // show first story for that prophet
+    if(stories.length === 1){
+      renderStory(stories[0]);
+    } else {
+      renderStoryPicker(stories);
+    }
+  }
+async function renderStory(story){
+    // ...existing code stays the same...
+  }
+  window.renderStory = renderStory;
+  function renderStoryPicker(stories){
+    document.getElementById('empty-state')?.remove();
+    const panel = document.getElementById('story-panel');
+    const cardsHtml = stories.map(s => `
+      <div class="story-card" style="margin-bottom:20px; cursor:pointer;" onclick='renderStory(${JSON.stringify(s).replace(/'/g, "&apos;")})'>
+        <h2>${lang==='ar' ? s.title_ar : s.title_en}</h2>
+        <span class="title-en">${lang==='ar' ? s.title_en : s.title_ar}</span>
+      </div>`).join('');
+    panel.innerHTML = `
+      <div class="section-label">${lang==='ar' ? 'اختر القصة' : 'Choose a story'}</div>
+      ${cardsHtml}`;
   }
 
   async function renderStory(story){
